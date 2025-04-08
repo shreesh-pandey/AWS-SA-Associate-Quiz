@@ -41,14 +41,13 @@ What began as a personal learning project in **August 2023** has now evolved int
 
 ## 🌍 Live Demo
 
-👉 [View the App Here](https://your-github-username.github.io/aws-quiz/)  
-*(Replace the link above with your actual GitHub Pages URL)*
+👉 [View the App Here](https://shreesh-pandey.github.io/AWS-SA-Associate-Quiz/)*
 
 ---
 
 ## 📌 Why I Built This
 
-I created this project to reinforce my AWS knowledge and simulate real exam conditions. Despite having **no prior coding experience**, I was able to build a fully functional quiz tool with the guidance of ChatGPT.
+I created this project to reinforce my AWS knowledge and simulate real exam conditions. Despite having **basic coding experience**, I was able to build a fully functional quiz tool with the guidance of ChatGPT.
 
 This project represents both a **learning milestone** and a **reusable resource** for myself and others preparing for the AWS SA-Associate exam.
 
