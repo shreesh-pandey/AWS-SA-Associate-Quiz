@@ -1,0 +1,77 @@
+[
+  {
+    "question": "A company collects data for temperature, humidity, and atmospheric pressure in cities across multiple continents. The company wants to use this data in a real-time dashboard for operations and forecasting. Which solution meets these requirements?",
+    "options": [
+      {
+        "label": "A",
+        "text": "Turn on S3 Transfer Acceleration on the destination S3 bucket.",
+        "correct": true
+      },
+      {
+        "label": "B",
+        "text": "Upload the data from each site to an S3 bucket in the closest Region.",
+        "correct": false
+      },
+      {
+        "label": "C",
+        "text": "Schedule AWS Snowball Edge Storage Optimized device jobs.",
+        "correct": false
+      },
+      {
+        "label": "D",
+        "text": "Upload the data from each site to an Amazon EC2 instance.",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "question": "A company needs to analyze log files in S3 with minimal operational overhead. What should the solutions architect do?",
+    "options": [
+      {
+        "label": "A",
+        "text": "Use Amazon Redshift.",
+        "correct": false
+      },
+      {
+        "label": "B",
+        "text": "Use Amazon CloudWatch Logs.",
+        "correct": false
+      },
+      {
+        "label": "C",
+        "text": "Use Amazon Athena directly with Amazon S3.",
+        "correct": true
+      },
+      {
+        "label": "D",
+        "text": "Use AWS Glue and Amazon EMR.",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "question": "A company wants to limit S3 access to AWS Organization accounts only. What's the simplest way?",
+    "options": [
+      {
+        "label": "A",
+        "text": "Add the aws PrincipalOrgID condition key.",
+        "correct": true
+      },
+      {
+        "label": "B",
+        "text": "Create an OU and use PrincipalOrgPaths.",
+        "correct": false
+      },
+      {
+        "label": "C",
+        "text": "Use CloudTrail to monitor org events.",
+        "correct": false
+      },
+      {
+        "label": "D",
+        "text": "Tag users and use PrincipalTag.",
+        "correct": false
+      }
+    ]
+  }
+]

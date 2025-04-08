@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AWS SA Quiz (Dynamic)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background: #f9f9f9; }
+    .question-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .option { margin: 8px 0; }
+    button { padding: 10px 20px; font-size: 16px; margin-top: 10px; cursor: pointer; }
+    .result { font-weight: bold; margin-top: 10px; }
+    #scoreBox { margin-top: 30px; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <h1>AWS Solutions Architect Quiz</h1>
+  <div id="quiz">Loading...</div>
+  <div id="scoreBox"></div>
+  <script>
+    let questions = [];
+    let current = 0, score = 0;
+
+    async function loadQuestions() {
+      const res = await fetch('questions.json');
+      questions = await res.json();
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const q = questions[current];
+      const container = document.getElementById('quiz');
+      container.innerHTML = `<div class="question-box">
+        <div><strong>Q${current + 1}:</strong> ${q.question}</div>
+        ${q.options.map((opt, i) => {
+          const inputType = q.options.filter(o => o.correct).length > 1 ? 'checkbox' : 'radio';
+          return `<div class="option"><label><input type="${inputType}" name="q${current}" value="${i}" /> ${opt.label}. ${opt.text}</label></div>`;
+        }).join('')}
+        <button onclick="submitAnswer()">Submit Answer</button>
+        <div class="result" id="result"></div>
+      </div>`;
+    }
+
+    function submitAnswer() {
+      const q = questions[current];
+      const selected = [...document.querySelectorAll(`input[name='q${current}']:checked`)].map(input => parseInt(input.value));
+      const correctIndexes = q.options.map((o, i) => o.correct ? i : -1).filter(i => i !== -1);
+      const correct = selected.length === correctIndexes.length && selected.every(i => correctIndexes.includes(i));
+
+      const resultBox = document.getElementById('result');
+      if (correct) {
+        resultBox.textContent = "✅ Correct!";
+        score++;
+      } else {
+        resultBox.textContent = "❌ Incorrect. Correct answer(s): " + correctIndexes.map(i => q.options[i].label).join(', ');
+      }
+
+      setTimeout(() => {
+        current++;
+        if (current < questions.length) {
+          loadQuestion();
+        } else {
+          document.getElementById('quiz').innerHTML = '';
+          document.getElementById('scoreBox').textContent = `You scored ${score} out of ${questions.length}`;
+        }
+      }, 2000);
+    }
+
+    loadQuestions();
+  </script>
+</body>
+</html>
