@@ -22,7 +22,7 @@
     let current = 0, score = 0;
 
     async function loadQuestions() {
-      const res = await fetch('questions.json');
+      const res = await fetch('questions.json?v=' + new Date().getTime());
       questions = await res.json();
       loadQuestion();
     }
