@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Word to JSON Converter – AWS Quiz Format</title>
+  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 40px; background: #f0f4f8; }
+    h1 { font-size: 26px; margin-bottom: 10px; }
+    #drop-area {
+      border: 2px dashed #6c757d;
+      padding: 30px;
+      background: #ffffff;
+      text-align: center;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    #drop-area:hover { border-color: #495057; }
+    pre, table { background: #ffffff; padding: 20px; border-radius: 10px; margin-top: 20px; width: 100%; }
+    button { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    table { border-collapse: collapse; }
+    th, td { border: 1px solid #dee2e6; padding: 8px; text-align: left; }
+    th { background-color: #e9ecef; }
+    #summary { margin-top: 10px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<h1>📄 Word to JSON Converter – AWS Quiz Format</h1>
+<p>Upload your <strong>.docx</strong> file with multiple-choice questions. Use "Correct" next to the right answers.</p>
+
+<div id="drop-area">
+  <p><strong>Drag & drop a Word (.docx) file here</strong></p>
+  <p>or click to select a file</p>
+  <input type="file" id="upload" accept=".docx" style="display:none;">
+</div>
+
+<button id="downloadBtn" style="display:none; margin-bottom: 20px;" onclick="downloadJSON()">Download JSON</button>
+
+<div id="summary"></div>
+<div id="preview"></div>
+<pre id="output"></pre>
+
+<script>
+  const dropArea = document.getElementById('drop-area');
+  const fileInput = document.getElementById('upload');
+  const output = document.getElementById('output');
+  const preview = document.getElementById('preview');
+  const summary = document.getElementById('summary');
+  let finalJSON = [];
+
+  dropArea.onclick = () => fileInput.click();
+  dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.style.borderColor = '#333'; });
+  dropArea.addEventListener('dragleave', () => { dropArea.style.borderColor = '#6c757d'; });
+  dropArea.addEventListener('drop', handleDrop);
+  fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+
+  function handleDrop(e) {
+    e.preventDefault();
+    handleFile(e.dataTransfer.files[0]);
+  }
+
+  function handleFile(file) {
+    if (!file || !file.name.endsWith('.docx')) {
+      alert('Please upload a valid .docx file.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const arrayBuffer = event.target.result;
+      mammoth.extractRawText({ arrayBuffer }).then(function(result) {
+        const lines = result.value.split('\n').map(l => l.trim()).filter(l => l);
+        finalJSON = parseToJSON(lines);
+        summary.textContent = `✅ Parsed ${finalJSON.length} questions from "${file.name}"`;
+        output.textContent = JSON.stringify(finalJSON, null, 2);
+        document.getElementById('downloadBtn').style.display = 'inline-block';
+        showPreview(finalJSON);
+      });
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+function parseToJSON(lines) {
+  const questions = [];
+  let current = null;
+  const optionRegex = /^[A-Z]\.\s+/;
+
+  lines.forEach(line => {
+    if (/^Question\s*#?\s*\d+|^\d+\./i.test(line)) {
+      if (current) questions.push(current);
+
+      // Clean only the first line
+      const cleaned = line
+        .replace(/^Question\s*#?\s*\d+\s*\.?\s*/i, '')
+        .replace(/^\d+\.\s*/, '');
+
+      current = { question: cleaned.trim(), options: [] };
+    } else if (optionRegex.test(line)) {
+      const label = line.charAt(0);
+      const text = line.substring(3).replace(/\s*Correct\s*/i, '').trim();
+      const correct = /Correct/i.test(line);
+      current?.options.push({ label, text, correct });
+    } else if (current) {
+      // Append additional lines to question
+      current.question += ' ' + line;
+    }
+  });
+
+  if (current) questions.push(current);
+  return questions;
+}
+
+
+  function showPreview(questions) {
+    let html = '<table><tr><th>#</th><th>Question</th><th>Correct Answer(s)</th></tr>';
+    questions.forEach((q, i) => {
+      const correct = q.options.filter(o => o.correct).map(o => o.label).join(', ');
+      html += `<tr><td>${i + 1}</td><td>${q.question}</td><td>${correct}</td></tr>`;
+    });
+    html += '</table>';
+    preview.innerHTML = html;
+  }
+
+  function downloadJSON() {
+    const blob = new Blob([JSON.stringify(finalJSON, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'questions.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+</script>
+
+</body>
+</html>
