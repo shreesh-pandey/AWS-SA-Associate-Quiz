@@ -1,72 +1,138 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AWS SA Quiz (Dynamic)</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background: #f9f9f9; }
-    .question-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    .option { margin: 8px 0; }
-    button { padding: 10px 20px; font-size: 16px; margin-top: 10px; cursor: pointer; }
-    .result { font-weight: bold; margin-top: 10px; }
-    #scoreBox { margin-top: 30px; font-size: 18px; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AWS Quiz App – SA Associate</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h1>AWS Solutions Architect Quiz</h1>
-  <div id="quiz">Loading...</div>
-  <div id="scoreBox"></div>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col items-center justify-start p-4">
+  <div class="w-full max-w-2xl bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-xl font-bold">AWS Quiz – Solutions Architect Associate</h1>
+      <label class="flex items-center gap-2 cursor-pointer">
+        <span class="text-sm">🌙 Dark Mode</span>
+        <input type="checkbox" id="darkToggle" class="toggle-checkbox">
+      </label>
+    </div>
+
+    <div id="category-filter" class="mb-4 flex flex-wrap gap-2"></div>
+    <div id="progress-bar-container" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4">
+      <div id="progress-bar" class="bg-blue-500 h-2 rounded-full" style="width: 0%"></div>
+    </div>
+
+    <div id="timer" class="text-right text-sm font-semibold text-red-500 mb-2 hidden">⏱️ Time left: <span id="timer-value"></span>s</div>
+    <div id="quiz-container" class="space-y-4"></div>
+
+    <button id="next-btn" class="mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded-xl hover:bg-blue-700 transition hidden">Next Question</button>
+    <div id="score-container" class="mt-6 text-center font-semibold hidden"></div>
+  </div>
+
   <script>
-    let questions = [];
-    let current = 0, score = 0;
+    const quizDataUrl = 'questions.json?v=' + new Date().getTime();
+    const quizContainer = document.getElementById('quiz-container');
+    const nextBtn = document.getElementById('next-btn');
+    const scoreContainer = document.getElementById('score-container');
+    const progressBar = document.getElementById('progress-bar');
+    const timerDisplay = document.getElementById('timer');
+    const timerValue = document.getElementById('timer-value');
+    const categoryFilter = document.getElementById('category-filter');
 
-    async function loadQuestions() {
-      const res = await fetch('questions.json?v=' + new Date().getTime());
-      questions = await res.json();
-      loadQuestion();
+    let questions = [], currentIndex = 0, score = 0, timer, selectedCategory = null;
+
+    // Dark mode toggle
+    document.getElementById('darkToggle').addEventListener('change', (e) => {
+      document.documentElement.classList.toggle('dark', e.target.checked);
+    });
+
+    fetch(quizDataUrl)
+      .then(res => res.json())
+      .then(data => {
+        const categories = [...new Set(data.flatMap(q => q.tags || []))];
+        if (categories.length > 0) {
+          categoryFilter.innerHTML = `<button onclick="filterCategory(null)" class="px-2 py-1 text-sm rounded bg-blue-100 dark:bg-blue-700">All</button>` +
+            categories.map(cat => `<button onclick="filterCategory('${cat}')" class="px-2 py-1 text-sm rounded bg-blue-100 dark:bg-blue-700">${cat}</button>`).join('');
+        }
+        questions = data;
+        filterCategory(null);
+      });
+
+    function filterCategory(category) {
+      selectedCategory = category;
+      currentIndex = 0;
+      score = 0;
+      filteredQuestions = selectedCategory ? questions.filter(q => q.tags?.includes(category)) : questions;
+      showQuestion();
     }
 
-    function loadQuestion() {
-      const q = questions[current];
-      const container = document.getElementById('quiz');
-      container.innerHTML = `<div class="question-box">
-        <div><strong>Q${current + 1}:</strong> ${q.question}</div>
-        ${q.options.map((opt, i) => {
-          const inputType = q.options.filter(o => o.correct).length > 1 ? 'checkbox' : 'radio';
-          return `<div class="option"><label><input type="${inputType}" name="q${current}" value="${i}" /> ${opt.label}. ${opt.text}</label></div>`;
-        }).join('')}
-        <button onclick="submitAnswer()">Submit Answer</button>
-        <div class="result" id="result"></div>
-      </div>`;
-    }
-
-    function submitAnswer() {
-      const q = questions[current];
-      const selected = [...document.querySelectorAll(`input[name='q${current}']:checked`)].map(input => parseInt(input.value));
-      const correctIndexes = q.options.map((o, i) => o.correct ? i : -1).filter(i => i !== -1);
-      const correct = selected.length === correctIndexes.length && selected.every(i => correctIndexes.includes(i));
-
-      const resultBox = document.getElementById('result');
-      if (correct) {
-        resultBox.textContent = "✅ Correct!";
-        score++;
-      } else {
-        resultBox.textContent = "❌ Incorrect. Correct answer(s): " + correctIndexes.map(i => q.options[i].label).join(', ');
+    function showQuestion() {
+      clearInterval(timer);
+      if (currentIndex >= filteredQuestions.length) {
+        quizContainer.innerHTML = '';
+        scoreContainer.textContent = `🎉 You answered ${score} out of ${filteredQuestions.length} correctly.`;
+        scoreContainer.classList.remove('hidden');
+        nextBtn.classList.add('hidden');
+        progressBar.style.width = '100%';
+        return;
       }
 
-      setTimeout(() => {
-        current++;
-        if (current < questions.length) {
-          loadQuestion();
-        } else {
-          document.getElementById('quiz').innerHTML = '';
-          document.getElementById('scoreBox').textContent = `You scored ${score} out of ${questions.length}`;
+      const current = filteredQuestions[currentIndex];
+      quizContainer.innerHTML = `
+        <div>
+          <p class="text-lg font-medium mb-3">Q${currentIndex + 1}. ${current.question}</p>
+          <div class="space-y-2">
+            ${current.options.map(opt => `
+              <button class="w-full border rounded-xl py-2 px-4 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition" data-label="${opt.label}" data-correct="${opt.correct}">
+                ${opt.label}. ${opt.text}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      progressBar.style.width = `${(currentIndex / filteredQuestions.length) * 100}%`;
+      nextBtn.classList.add('hidden');
+      scoreContainer.classList.add('hidden');
+      timerDisplay.classList.remove('hidden');
+
+      let timeLeft = 30;
+      timerValue.textContent = timeLeft;
+      timer = setInterval(() => {
+        timeLeft--;
+        timerValue.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          lockOptions();
         }
-      }, 2000);
+      }, 1000);
+
+      document.querySelectorAll('button[data-label]').forEach(btn => {
+        btn.onclick = () => {
+          if (btn.disabled) return;
+          const correct = btn.getAttribute('data-correct') === 'true';
+          if (correct) {
+            btn.classList.add('bg-green-200');
+            score++;
+          } else {
+            btn.classList.add('bg-red-200');
+          }
+          lockOptions();
+        };
+      });
     }
 
-    loadQuestions();
+    function lockOptions() {
+      clearInterval(timer);
+      document.querySelectorAll('button[data-label]').forEach(b => b.disabled = true);
+      nextBtn.classList.remove('hidden');
+      timerDisplay.classList.add('hidden');
+      progressBar.style.width = `${((currentIndex + 1) / filteredQuestions.length) * 100}%`;
+    }
+
+    nextBtn.onclick = () => {
+      currentIndex++;
+      showQuestion();
+    };
   </script>
 </body>
 </html>
