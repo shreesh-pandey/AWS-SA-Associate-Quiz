@@ -4,25 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AWS Quiz App – SA Associate</title>
-<script>
-  tailwind.config = {
-    darkMode: 'class'
-  }
-</script>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col items-center justify-start p-4">
-  <div class="w-full max-w-2xl bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl">
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col items-center justify-start p-4">
+  <div class="w-full max-w-2xl bg-white p-6 rounded-2xl shadow-xl">
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-xl font-bold">AWS Quiz – Solutions Architect Associate</h1>
-      <label class="flex items-center gap-2 cursor-pointer">
-        <span class="text-sm">🌙 Dark Mode</span>
-        <input type="checkbox" id="darkToggle" class="toggle-checkbox">
-      </label>
     </div>
 
     <div id="category-filter" class="mb-4 flex flex-wrap gap-2"></div>
-    <div id="progress-bar-container" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4">
+    <div id="progress-bar-container" class="w-full bg-gray-200 rounded-full h-2 mb-4">
       <div id="progress-bar" class="bg-blue-500 h-2 rounded-full" style="width: 0%"></div>
     </div>
 
@@ -45,18 +36,13 @@
 
     let questions = [], currentIndex = 0, score = 0, timer, selectedCategory = null;
 
-    // Dark mode toggle
-    document.getElementById('darkToggle').addEventListener('change', (e) => {
-      document.documentElement.classList.toggle('dark', e.target.checked);
-    });
-
     fetch(quizDataUrl)
       .then(res => res.json())
       .then(data => {
         const categories = [...new Set(data.flatMap(q => q.tags || []))];
         if (categories.length > 0) {
-          categoryFilter.innerHTML = `<button onclick="filterCategory(null)" class="px-2 py-1 text-sm rounded bg-blue-100 dark:bg-blue-700">All</button>` +
-            categories.map(cat => `<button onclick="filterCategory('${cat}')" class="px-2 py-1 text-sm rounded bg-blue-100 dark:bg-blue-700">${cat}</button>`).join('');
+          categoryFilter.innerHTML = `<button onclick="filterCategory(null)" class="px-2 py-1 text-sm rounded bg-blue-100">All</button>` +
+            categories.map(cat => `<button onclick="filterCategory('${cat}')" class="px-2 py-1 text-sm rounded bg-blue-100">${cat}</button>`).join('');
         }
         questions = data;
         filterCategory(null);
@@ -87,7 +73,7 @@
           <p class="text-lg font-medium mb-3">Q${currentIndex + 1}. ${current.question}</p>
           <div class="space-y-2">
             ${current.options.map(opt => `
-              <button class="w-full border rounded-xl py-2 px-4 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition" data-label="${opt.label}" data-correct="${opt.correct}">
+              <button class="w-full border rounded-xl py-2 px-4 text-left hover:bg-gray-100 transition" data-label="${opt.label}" data-correct="${opt.correct}">
                 ${opt.label}. ${opt.text}
               </button>
             `).join('')}
