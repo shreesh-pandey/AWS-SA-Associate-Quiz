@@ -13,6 +13,12 @@
     </div>
 
     <div id="category-filter" class="mb-4 flex flex-wrap gap-2"></div>
+    <div class="mb-4">
+      <label class="flex items-center gap-2 text-sm">
+        <input type="checkbox" id="shuffleToggle" class="form-checkbox" />
+        Shuffle 50 random questions
+      </label>
+    </div>
     <div id="progress-bar-container" class="w-full bg-gray-200 rounded-full h-2 mb-4">
       <div id="progress-bar" class="bg-blue-500 h-2 rounded-full" style="width: 0%"></div>
     </div>
@@ -34,7 +40,7 @@
     const timerValue = document.getElementById('timer-value');
     const categoryFilter = document.getElementById('category-filter');
 
-    let questions = [], currentIndex = 0, score = 0, timer, selectedCategory = null;
+    let questions = [], currentIndex = 0, score = 0, timer, selectedCategory = null, filteredQuestions = [];
 
     fetch(quizDataUrl)
       .then(res => res.json())
@@ -46,13 +52,30 @@
         }
         questions = data;
         filterCategory(null);
+
+        document.getElementById('shuffleToggle')?.addEventListener('change', () => {
+          filterCategory(selectedCategory);
+        });
       });
+
+    function shuffleArray(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
 
     function filterCategory(category) {
       selectedCategory = category;
       currentIndex = 0;
       score = 0;
-      filteredQuestions = selectedCategory ? questions.filter(q => q.tags?.includes(category)) : questions;
+
+      filteredQuestions = selectedCategory
+        ? questions.filter(q => q.tags?.includes(category))
+        : [...questions];
+
+      const shuffleEnabled = document.getElementById('shuffleToggle')?.checked;
+      if (shuffleEnabled) {
+        filteredQuestions = shuffleArray(filteredQuestions).slice(0, 50);
+      }
+
       showQuestion();
     }
 
@@ -86,7 +109,7 @@
       scoreContainer.classList.add('hidden');
       timerDisplay.classList.remove('hidden');
 
-      let timeLeft = 120;
+      let timeLeft = 30;
       timerValue.textContent = timeLeft;
       timer = setInterval(() => {
         timeLeft--;
