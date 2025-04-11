@@ -107,3 +107,29 @@
 - Introduce score saving (local or cloud)
 - Polish UI for mobile view
 - Add user-friendly editor for non-coders
+
+---
+
+## 📘 Project Log – April 12, 2025
+
+### ✅ Major Enhancements Completed
+- Redesigned the quiz app with a **clean, modern UI** using TailwindCSS
+- Added key features:
+  - 🕒 **30-second timer** per question
+  - 🧭 **Progress bar** for tracking quiz completion
+  - 🏷️ **Category filter** (optional usage)
+- Implemented and tested:
+  - Responsive layout
+  - Improved button states and overall readability
+
+### ❌ Feature Removed
+- ❌ **Dark mode toggle** was removed after implementation issues and reevaluation of necessity
+
+### 🚫 Deferred (For Future Phase)
+- Tagging questions via Word → JSON tool
+- Score breakdown by tag/category
+
+### ✅ Current Status
+- Final version uploaded to GitHub and live via GitHub Pages
+- Tool usage and update guides are complete
+- Project stable and ready for practical use
